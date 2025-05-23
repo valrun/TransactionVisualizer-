@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: txn_db
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d txn_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: eclipse-temurin:17-jre-jammy
+    container_name: txn_visualizer
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/txn_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./target/txn-visualizer.jar:/txn-visualizer.jar
+    command: [ "java", "-jar", "/txn-visualizer.jar" ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
