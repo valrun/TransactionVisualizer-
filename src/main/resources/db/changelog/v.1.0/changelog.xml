@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="task2-install-uuid-extension" author="valrun">
+        <sql>CREATE
+        EXTENSION IF NOT EXISTS "pgcrypto";</sql>
+    </changeSet>
+
+    <changeSet id="task2-create-table-accounts" author="valrun">
+        <createTable tableName="accounts">
+            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance" type="bigint" defaultValue="0">
+                <constraints nullable="false" checkConstraint="balance >= 0"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="task2-create-table-txn" author="valrun">
+        <createTable tableName="txn">
+            <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="time" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="isolation_level" type="varchar(50)">
+                <constraints nullable="false"
+                             checkConstraint="isolation_level IN ('READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE')"/>
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"
+                             checkConstraint="status IN (
+                    'STARTED',          -- Transaction created and initialized
+                    'LOCK_ACQUIRED',    -- Required row locks successfully obtained
+                    'VALIDATED',        -- Pre-conditions verified (sufficient funds, valid accounts)
+                    'PROCESSING',       -- Funds transfer in progress (between accounts)
+                    'COMMITTED',        -- Successfully committed to database
+                    'ROLLBACK_STARTED', -- Rollback initiated (due to error or conflict)
+                    'ROLLED_BACK',      -- Transaction fully rolled back (atomicity guarantee)
+                    'FAILED',           -- General failure state (unhandled exception)
+                    'DEADLOCK_VICTIM',  -- Chosen as deadlock victim (automatically rolled back)
+                    'TIMEOUT',          -- Lock wait timeout exceeded
+                    'CONFLICT',         -- Serializable isolation violation detected
+                    'RETRYING'          -- Transaction in retry loop (for optimistic concurrency)
+                )"/>
+            </column>
+            <column name="delay" type="integer" defaultValue="0"/>
+            <column name="sender_id" type="uuid"/>
+            <column name="payee_id" type="uuid"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="txn"
+                baseColumnNames="sender_id"
+                constraintName="fk_sender_account"
+                referencedTableName="accounts"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="txn"
+                baseColumnNames="payee_id"
+                constraintName="fk_payee_account"
+                referencedTableName="accounts"
+                referencedColumnNames="id"/>
+
+        <createIndex tableName="txn" indexName="idx_txn_sender_id">
+            <column name="sender_id"/>
+        </createIndex>
+
+        <createIndex tableName="txn" indexName="idx_txn_payee_id">
+            <column name="payee_id"/>
+        </createIndex>
+
+        <createIndex tableName="txn" indexName="idx_txn_time">
+            <column name="time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="task2-create-table-txn_log" author="valrun">
+        <createTable tableName="txn_log">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="time" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="txn_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="log" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="txn_log"
+                baseColumnNames="txn_id"
+                constraintName="fk_log_txn"
+                referencedTableName="txn"
+                referencedColumnNames="id"/>
+
+        <createIndex tableName="txn_log" indexName="idx_txn_log_txn_id">
+            <column name="txn_id"/>
+        </createIndex>
+
+        <createIndex tableName="txn_log" indexName="idx_txn_log_time">
+            <column name="time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="task2-insert-accounts-date" author="valrun">
+        <insert tableName="accounts">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="name" value="Авдеев Андрей Александрович"/>
+            <column name="balance" value="100000"/>
+        </insert>
+
+        <insert tableName="accounts">
+            <column name="id" value="6ba7b810-9dad-11d1-80b4-00c04fd430c8"/>
+            <column name="name" value="Березкин Борис Богданович"/>
+            <column name="balance" value="50000"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
