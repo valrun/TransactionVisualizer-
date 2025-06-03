@@ -38,6 +38,21 @@ public class Transaction {
     @JoinColumn(name = "payee_id")
     private Account payee;
 
+    public Transaction() {
+    }
+
+    public Transaction(IsolationLevel isolationLevel, Account sender, Account payee, Integer delay) {
+        this.isolationLevel = isolationLevel;
+        this.status = TransactionStatus.STARTED;
+        this.delay = delay;
+        this.sender = sender;
+        this.payee = payee;
+    }
+
+    public Transaction(IsolationLevel isolationLevel, Account sender, Account payee) {
+        this(isolationLevel, sender, payee, 0);
+    }
+
     public UUID getId() {
         return id;
     }
