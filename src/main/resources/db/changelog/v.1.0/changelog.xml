@@ -131,4 +131,11 @@
         </insert>
     </changeSet>
 
+    <changeSet id="task2-fix-add-version-to-accounts" author="valrun">
+        <addColumn tableName="accounts">
+            <column name="version" type="bigint" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

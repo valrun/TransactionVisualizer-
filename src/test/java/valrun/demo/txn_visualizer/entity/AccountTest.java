@@ -13,6 +13,7 @@ class AccountTest {
         assertNull(account.getId());
         assertNull(account.getBalance());
         assertNull(account.getName());
+        assertNull(account.getVersion());
     }
 
     @Test
@@ -22,6 +23,7 @@ class AccountTest {
         assertNull(account.getId());
         assertEquals("Test Account", account.getName());
         assertEquals(1000L, account.getBalance());
+        assertEquals(0L, account.getVersion());
     }
 
     @Test
@@ -30,6 +32,7 @@ class AccountTest {
         account.setBalance(600L);
 
         assertEquals(600L, account.getBalance());
+        assertEquals(1L, account.getVersion());
     }
 
 }

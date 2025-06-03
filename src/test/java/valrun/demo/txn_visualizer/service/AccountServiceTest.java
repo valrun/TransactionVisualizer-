@@ -38,6 +38,7 @@ class AccountServiceTest {
         assertNotNull(result);
         assertEquals(name, result.getName());
         assertEquals(balance, result.getBalance());
+        assertEquals(0L, result.getVersion());
         verify(accountRepository, times(1)).save(any(Account.class));
     }
 
@@ -76,6 +77,7 @@ class AccountServiceTest {
         assertEquals(name, updatedResult.getName());
         assertEquals(updatedBalance, updatedResult.getBalance());
         assertEquals(accountId, updatedResult.getId());
+        assertEquals(1L, updatedResult.getVersion());
     }
 
     @Test

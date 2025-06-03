@@ -18,6 +18,9 @@ public class Account {
     @Column(nullable = false)
     private Long balance;
 
+    @Column(nullable = false)
+    private Long version;
+
     public Account() {
     }
 
@@ -25,6 +28,7 @@ public class Account {
         this();
         this.name = name;
         this.balance = balance;
+        this.version = 0L;
     }
 
     public UUID getId() {
@@ -39,7 +43,16 @@ public class Account {
         return balance;
     }
 
+    public Long getVersion() {
+        return version;
+    }
+
     public void setBalance(Long balance) {
+        increaseVersion();
         this.balance = balance;
+    }
+
+    private void increaseVersion() {
+        this.version++;
     }
 }
